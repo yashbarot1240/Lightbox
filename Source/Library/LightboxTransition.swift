@@ -93,7 +93,7 @@ class LightboxTransition: UIPercentDrivenInteractiveTransition {
 }
 
 // MARK: - UIViewControllerAnimatedTransitioning
-
+/*
 extension LightboxTransition: UIViewControllerAnimatedTransitioning {
 
   func transitionDuration(using transitionContext: UIViewControllerContextTransitioning?) -> TimeInterval {
@@ -153,7 +153,7 @@ extension LightboxTransition: UIViewControllerTransitioningDelegate {
     return interactive ? self : nil
   }
 }
-
+*/
 // MARK: - UIGestureRecognizerDelegate
 
 extension LightboxTransition: UIGestureRecognizerDelegate {

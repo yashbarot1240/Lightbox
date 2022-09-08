@@ -1,24 +1,18 @@
 import UIKit
-import SDWebImage
 
-public protocol LightboxControllerPageDelegate: AnyObject {
+public protocol LightboxControllerPageDelegate: class {
 
   func lightboxController(_ controller: LightboxController, didMoveToPage page: Int)
 }
 
-public protocol LightboxControllerDismissalDelegate: AnyObject {
+public protocol LightboxControllerDismissalDelegate: class {
 
   func lightboxControllerWillDismiss(_ controller: LightboxController)
 }
 
-public protocol LightboxControllerTouchDelegate: AnyObject {
+public protocol LightboxControllerTouchDelegate: class {
 
   func lightboxController(_ controller: LightboxController, didTouch image: LightboxImage, at index: Int)
-}
-
-public protocol LightboxControllerDeleteDelegate: AnyObject {
-
-  func lightboxController(_ controller: LightboxController, willDeleteAt index: Int)
 }
 
 open class LightboxController: UIViewController {
@@ -50,8 +44,8 @@ open class LightboxController: UIViewController {
     return view
   }()
 
-  lazy var backgroundView: SDAnimatedImageView = {
-    let view = SDAnimatedImageView()
+  lazy var backgroundView: UIImageView = {
+    let view = UIImageView()
     view.autoresizingMask = [.flexibleWidth, .flexibleHeight]
 
     return view
@@ -145,7 +139,6 @@ open class LightboxController: UIViewController {
   open weak var pageDelegate: LightboxControllerPageDelegate?
   open weak var dismissalDelegate: LightboxControllerDismissalDelegate?
   open weak var imageTouchDelegate: LightboxControllerTouchDelegate?
-  open weak var imageDeleteDelegate: LightboxControllerDeleteDelegate?
   open internal(set) var presented = false
   open fileprivate(set) var seen = false
 
@@ -192,6 +185,14 @@ open class LightboxController: UIViewController {
     goTo(initialPage, animated: false)
   }
 
+  open override func viewDidAppear(_ animated: Bool) {
+    super.viewDidAppear(animated)
+    if !presented {
+      presented = true
+      configureLayout(view.bounds.size)
+    }
+  }
+
   open override func viewDidLayoutSubviews() {
     super.viewDidLayoutSubviews()
 
@@ -212,11 +213,6 @@ open class LightboxController: UIViewController {
       width: view.bounds.width,
       height: 100
     )
-    
-    if !presented {
-      presented = true
-      configureLayout(view.bounds.size)
-    }
   }
 
   open override var prefersStatusBarHidden: Bool {
@@ -390,7 +386,7 @@ extension LightboxController: UIScrollViewDelegate {
 
 extension LightboxController: PageViewDelegate {
 
-  func remoteImageDidLoad(_ image: UIImage?, imageView: SDAnimatedImageView) {
+  func remoteImageDidLoad(_ image: UIImage?, imageView: UIImageView) {
     guard let image = image, dynamicBackground else {
       return
     }
@@ -429,8 +425,6 @@ extension LightboxController: HeaderViewDelegate {
   func headerView(_ headerView: HeaderView, didPressDeleteButton deleteButton: UIButton) {
     deleteButton.isEnabled = false
 
-    imageDeleteDelegate?.lightboxController(self, willDeleteAt: currentPage)
-      
     guard numberOfPages != 1 else {
       pageViews.removeAll()
       self.headerView(headerView, didPressCloseButton: headerView.closeButton)
@@ -446,7 +440,6 @@ extension LightboxController: HeaderViewDelegate {
       currentPage -= 1
     }
 
-    self.initialImages.remove(at: prevIndex)
     self.pageViews.remove(at: prevIndex).removeFromSuperview()
 
     DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 0.5) {

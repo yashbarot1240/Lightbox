@@ -1,4 +1,5 @@
 import UIKit
+import SDWebImage
 
 public protocol LightboxControllerPageDelegate: class {
 
@@ -175,7 +176,7 @@ open class LightboxController: UIViewController {
     view.backgroundColor = UIColor.black
     transitionManager.lightboxController = self
     transitionManager.scrollView = scrollView
-    transitioningDelegate = transitionManager
+    //transitioningDelegate = transitionManager
 
     [scrollView, overlayView, headerView, footerView].forEach { view.addSubview($0) }
     overlayView.addGestureRecognizer(overlayTapGestureRecognizer)
@@ -385,6 +386,19 @@ extension LightboxController: UIScrollViewDelegate {
 // MARK: - PageViewDelegate
 
 extension LightboxController: PageViewDelegate {
+    func remoteImageDidLoad(_ image: UIImage?, imageView: SDAnimatedImageView) {
+        guard let image = image, dynamicBackground else {
+          return
+        }
+
+        let imageViewFrame = imageView.convert(imageView.frame, to: view)
+        guard view.frame.intersects(imageViewFrame) else {
+          return
+        }
+
+        loadDynamicBackground(image)
+    }
+    
 
   func remoteImageDidLoad(_ image: UIImage?, imageView: UIImageView) {
     guard let image = image, dynamicBackground else {
